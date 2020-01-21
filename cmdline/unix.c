@@ -650,9 +650,14 @@ int fsinfo(const char* path, int* has_persistent_inode, int* has_syncronized_har
 	const char* ptype;
 
 #if HAVE_STATFS
-	struct statfs st;
+#if __NetBSD__
+#define STATFS_IMPL statvfs
+#else
+#define STATFS_IMPL statfs
+#endif
+	struct STATFS_IMPL st;
 
-	if (statfs(path, &st) != 0) {
+	if (STATFS_IMPL(path, &st) != 0) {
 		char dir[PATH_MAX];
 		char* slash;
 
@@ -674,7 +679,7 @@ int fsinfo(const char* path, int* has_persistent_inode, int* has_syncronized_har
 			return -1;
 
 		*slash = 0;
-		if (statfs(dir, &st) != 0)
+		if (STATFS_IMPL(dir, &st) != 0)
 			return -1;
 	}
 #endif
